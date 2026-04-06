@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNOW Master Dashboard v09 - Strategic Workflow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-blue: #0054A4;
+            --brand-cyan: #00A9E0;
+            --brand-amber: #FFB81C;
+            --bg-main: #F1F5F9;
+            --bg-card: #FFFFFF;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --sidebar-width: 280px;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #0F172A;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+        .sidebar-header { padding: 30px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header h2 { font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 700; background: linear-gradient(135deg, #FFF 0%, var(--brand-cyan) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-menu { padding: 20px 0; flex-grow: 1; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; padding: 14px 24px; color: #94A3B8; text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: 0.2s; border-left: 3px solid transparent; cursor: pointer; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: rgba(0, 169, 224, 0.1); color: var(--brand-cyan); border-left-color: var(--brand-cyan); }
+        .nav-item i { margin-right: 12px; font-style: normal; width: 24px; text-align: center; }
+
+        /* Main Content */
+        .main-content { margin-left: var(--sidebar-width); flex-grow: 1; padding: 40px; width: calc(100% - var(--sidebar-width)); }
+        .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
+        .header-title h1 { font-family: 'Outfit', sans-serif; font-size: 1.85rem; font-weight: 700; color: #0F172A; margin-bottom: 4px; }
+        .header-title p { color: var(--text-muted); font-size: 0.95rem; }
+
+        /* Card System */
+        .card { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 24px; position: relative; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 24px; }
+
+        .metric-card { display: flex; flex-direction: column; }
+        .metric-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .metric-value { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 700; color: var(--brand-blue); }
+        .metric-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* Tables & Filters */
+        .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
+        th { background: #F8FAFC; padding: 12px 16px; font-weight: 600; color: #475569; border-bottom: 1px solid var(--border); position: sticky; top: 0; }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:hover td { background: #F8FAFC; }
+
+        /* Inputs */
+        .text-area { width: 100%; min-height: 140px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; margin-bottom: 15px; }
+        .input-text { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; outline: none; }
+        .input-text:focus { border-color: var(--brand-cyan); box-shadow: 0 0 0 2px rgba(0, 169, 224, 0.1); }
+
+        /* Buttons */
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
+        .btn-primary { background: var(--brand-blue); color: white; }
+        .btn-amber { background: var(--brand-amber); color: #423000; }
+        .btn-success { background: var(--success); color: white; }
+
+        /* Specific Statuses */
+        .status-pill { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-align: center; }
+        .tag-active { background: #DCFCE7; color: #166534; }
+        .tag-pending { background: #FEF3C7; color: #92400E; }
+        .tag-empty { background: #F3F4F6; color: #6B7280; }
+
+        /* Agents Grid */
+        .agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        .agent-card { border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
+        .agent-card:hover { border-color: var(--brand-cyan); transform: translateY(-2px); }
+        .agent-card.active { border-color: var(--brand-cyan); background: rgba(0, 169, 224, 0.05); }
+        .agent-badge { position: absolute; top: -8px; right: -8px; background: var(--brand-cyan); color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .hidden { display: none; }
+
+        .filter-row { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-item { display: flex; flex-direction: column; gap: 5px; }
+        .filter-item label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>PMF MASTER v09</h2>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="switchTab('tab-dash', this)">
+                <i>📊</i> <span>Steering Dashboard</span>
+            </div>
+            <div class="nav-item" style="color:var(--brand-amber);" onclick="switchTab('tab-triage', this)">
+                <i>⚡</i> <span>Morning Triage</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-dispatch', this)">
+                <i>🚚</i> <span>Work Dispatch</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-l1-contact', this)">
+                <i>📞</i> <span>L1 CDMX Outbound Team</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-raw', this)">
+                <i>📁</i> <span>Journey Database</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('tab-import', this)">
+                <i>📥</i> <span>Import SNOW Data</span>
+            </div>
+        </div>
+        <div class="nav-item" style="border-top: 1px solid rgba(255,255,255,0.1); color: #EF4444;" onclick="resetLocalStorage()">
+            <i>🗑️</i> <span>Reset Local Memory</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-title">
+                <h1 id="page-title">Steering Dashboard</h1>
+                <p id="page-subtitle">Strategic UCX PMF Backlog Operations</p>
+            </div>
+            <div id="last-update" style="font-size:0.8rem; color:var(--text-muted);">Last Sync: Loading...</div>
+        </div>
+
+        <!-- TAB: DASHBOARD -->
+        <div id="tab-dash" class="tab-content active">
+            <div class="grid">
+                <div class="card metric-card">
+                    <span class="metric-label">Untouched (Triage)</span>
+                    <span class="metric-value" id="count-untouched">0</span>
+                    <span class="metric-sub">No stats assigned yet</span>
+                </div>
+                <div class="card metric-card">
+                    <span class="metric-label">Validation Queue</span>
+                    <span class="metric-value" id="count-val-queue" style="color:var(--brand-cyan);">0</span>
+                    <span class="metric-sub">Active in Dispatch Factory</span>
+                </div>
+                <div class="card metric-card">
+                    <span class="metric-label">Escalated L2</span>
+                    <span class="metric-value" id="count-l2">0</span>
+                    <span class="metric-sub">Waiting for backend</span>
+                </div>
+                <div class="card metric-card">
+                    <span class="metric-label">Outbound Backend</span>
+                    <span class="metric-value" id="count-outbound" style="color:var(--brand-amber);">0</span>
+                    <span class="metric-sub">Final L1 Contact Pool</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Global Backlog Finder</h3>
+                <div class="filter-row" style="margin-top:20px;">
+                    <div class="filter-item">
+                        <label>Search All</label>
+                        <input type="text" id="globalSearch" class="input-text" placeholder="Inc / SAP / Desc..." onkeyup="renderGlobalTable()">
+                    </div>
+                    <div class="filter-item">
+                        <label>Strategy</label>
+                        <select id="filterStrategy" class="input-text" onchange="renderGlobalTable()">
+                            <option value="ALL">ALL STRATEGIES</option>
+                            <option value="PENDING">PENDING</option>
+                            <option value="L1">KEEP L1</option>
+                            <option value="L2">ESCALATED L2</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>Agent</label>
+                        <select id="filterAgent" class="input-text" onchange="renderGlobalTable()">
+                            <option value="ALL">ALL AGENTS</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrap" style="max-height: 500px;">
+                    <table id="global-table"></table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: MORNING TRIAGE -->
+        <div id="tab-triage" class="tab-content">
+            <div class="card">
+                <h3>Morning Triage (UNTRIAGED ONLY)</h3>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:20px;">These tickets have no status assigned and need initial categorization.</p>
+                <div class="table-wrap" style="max-height: 500px;">
+                    <table id="triage-table"></table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: DISPATCH -->
+        <div id="tab-dispatch" class="tab-content">
+            <div class="card">
+                <h3>1. Active Validation Agents</h3>
+                <input type="text" id="agentInput" class="input-text" style="width:100%; margin:15px 0;" value="FERNANDO, SCARLET, ADRIAN, MURAD, JUAN CARLOS, XCARET, ALFREDO, LUIS EDUARDO, LIZBETH, VALERIA">
+                <button class="btn btn-primary" onclick="saveAgents()">Update Agents</button>
+            </div>
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>2. Technical Validation Dispatch</h3>
+                    <div id="ready-val-badge" class="status-pill tag-active">Ready: 0</div>
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-top:5px;">Evenly distributes tickets to agents for status verification.</p>
+                <button class="btn btn-primary" style="margin-top:15px;" onclick="dispatchValidationWork()">🚀 Dispatch Selection Work</button>
+            </div>
+            <div class="agent-grid" id="val-agent-grid"></div>
+            <div id="val-workspace" class="card hidden" style="margin-top:24px; border-top:4px solid var(--brand-cyan);">
+                <div id="val-workspace-content"></div>
+            </div>
+        </div>
+
+        <!-- TAB: L1 OUTBOUND -->
+        <div id="tab-l1-contact" class="tab-content">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>L1 CDMX Outbound Team</h3>
+                    <div id="ready-out-badge" class="status-pill tag-active">Pending Contact: 0</div>
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-muted);">Tickets that are ACTIVE in both CEP & Okta and ready for final call.</p>
+                <button class="btn btn-amber" style="margin-top:15px;" onclick="dispatchOutboundWork()">📞 Dispatch Contact Batch</button>
+            </div>
+            <div class="agent-grid" id="out-agent-grid"></div>
+            <div id="out-workspace" class="card hidden" style="margin-top:24px; border-top:4px solid var(--brand-amber);">
+                <div id="out-workspace-content"></div>
+            </div>
+        </div>
+
+        <!-- TAB: MASTER RAW -->
+        <div id="tab-raw" class="tab-content">
+            <div class="card">
+                <h3>Journey & History Database</h3>
+                <div class="table-wrap" style="max-height: 700px;">
+                    <table id="master-table"></table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: IMPORT -->
+        <div id="tab-import" class="tab-content">
+            <div class="card">
+                <h3>Data Sync Engine</h3>
+                <textarea id="importInput" class="text-area" placeholder="Paste data here..."></textarea>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-primary" onclick="processImport()">Universal Sync (v09)</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let GLOBAL_DATA = [];
+        let SELECTED_VAL_AGENT = null;
+        let SELECTED_OUT_AGENT = null;
+
+        window.onload = () => {
+            const saved = localStorage.getItem('SNOW_MASTER_V9');
+            if(saved) GLOBAL_DATA = JSON.parse(saved);
+            const savedA = localStorage.getItem('SNOW_AGENTS_V9');
+            if(savedA) document.getElementById('agentInput').value = savedA;
+            refreshUI();
+        };
+
+        function saveData(silent = false) {
+            localStorage.setItem('SNOW_MASTER_V9', JSON.stringify(GLOBAL_DATA));
+            localStorage.setItem('SNOW_AGENTS_V9', document.getElementById('agentInput').value);
+            if(!silent) alert('Progress Saved Locally.');
+            refreshUI();
+        }
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(el) el.classList.add('active');
+            refreshUI();
+        }
+
+        function refreshUI() {
+            updateMetrics();
+            renderTriage();
+            renderAgentGrids();
+            renderGlobalTable();
+            renderMasterTable();
+            updateLastSync();
+        }
+
+        function updateMetrics() {
+            const untouched = GLOBAL_DATA.filter(r => !r.OrigCEP && !r.OrigOkta && !r.ValCEP && !r.ValOkta && !r.SNOWClosed).length;
+            const outbound = GLOBAL_DATA.filter(isOutboundReady).length;
+            const l2 = GLOBAL_DATA.filter(r => r.Strategy === 'L2').length;
+            const valQueue = GLOBAL_DATA.filter(r => r.Strategy === 'L1' && !isOutboundReady(r)).length;
+
+            document.getElementById('count-untouched').innerText = untouched;
+            document.getElementById('count-val-queue').innerText = valQueue;
+            document.getElementById('count-l2').innerText = l2;
+            document.getElementById('count-outbound').innerText = outbound;
+            
+            // Only count truly UNTOUCHED (PENDING, no status, unassigned)
+            const rdyVal = GLOBAL_DATA.filter(r => r.Strategy === 'PENDING' && !r.OrigCEP && !r.OrigOkta && !r.ValCEP && !r.ValOkta && (!r.AssignedAgent || r.AssignedAgent === 'Unassigned')).length;
+            document.getElementById('ready-val-badge').innerText = `Ready to Dispatch: ${rdyVal}`;
+
+            const rdyOut = GLOBAL_DATA.filter(r => isOutboundReady(r) && (!r.AssignedAgent || r.AssignedAgent === 'Unassigned')).length;
+            document.getElementById('ready-out-badge').innerText = `Pending Contact: ${rdyOut}`;
+        }
+
+        function isOutboundReady(r) {
+            return (r.ValCEP === 'ACTIVE' && r.ValOkta === 'ACTIVE' && r.OrigCEP === 'ACTIVE' && r.OrigOkta === 'ACTIVE');
+        }
+
+        // --- Core Sync ---
+        function parseText(raw) {
+            const result = []; let row = []; let cell = ''; let inQuotes = false;
+            const hasTab = raw.includes('\t'); const delimiter = hasTab ? '\t' : ',';
+            for (let i = 0; i < raw.length; i++) {
+                const char = raw[i]; const next = raw[i+1];
+                if (char === '"' && inQuotes && next === '"') { cell += '"'; i++; }
+                else if (char === '"') inQuotes = !inQuotes;
+                else if (char === delimiter && !inQuotes) { row.push(cell.trim()); cell = ''; }
+                else if ((char === '\n' || char === '\r') && !inQuotes) {
+                    if (char === '\r' && next === '\n') i++; row.push(cell.trim());
+                    if (row.length > 1 || row[0] !== '') result.push(row);
+                    row = []; cell = '';
+                } else cell += char;
+            }
+            if (cell !== '' || row.length > 0) { row.push(cell.trim()); result.push(row); }
+            return result;
+        }
+
+        function extractSAP(desc) {
+            if(!desc) return '';
+            const m = desc.match(/sapid\s*:?\s*(\d+)/i) || desc.match(/sap\s*id\s*:?\s*(\d+)/i);
+            return m ? m[1] : '';
+        }
+        function extractPhone(desc) {
+            if(!desc) return '';
+            const m = desc.match(/phone\s*:?\s*([\d]{7,})/i) || desc.match(/tel[ée]fono\s*:?\s*([\d]{7,})/i);
+            return m ? m[1] : '';
+        }
+
+        function processImport() {
+            const raw = document.getElementById('importInput').value.trim();
+            if(!raw) return alert('No data to import.');
+            const rows = parseText(raw);
+            if(rows.length < 2) return alert('Could not parse data — check format.');
+            const headers = rows[0].map(h => h.toLowerCase().trim().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' '));
+            const today = new Date().toLocaleDateString();
+            let added = 0, updated = 0;
+            
+            rows.slice(1).forEach(row => {
+                const rec = {}; headers.forEach((h, idx) => rec[h] = row[idx] || '');
+                const inc = (rec['number'] || rec['incident number'] || '').toUpperCase();
+                if(!inc) return;
+
+                let target = GLOBAL_DATA.find(x => x.Incident === inc);
+                const isNew = !target;
+                if(isNew) {
+                    target = { Incident: inc, Strategy: 'PENDING', AssignedAgent: 'Unassigned', SNOWClosed: false, ImportDate: today, Journey: `Imported ${today}` };
+                    GLOBAL_DATA.push(target);
+                    added++;
+                } else { updated++; }
+
+                // Core fields
+                target.ShortDesc    = rec['short description'] || target.ShortDesc || '';
+                target.AssignmentGroup = rec['assignment group'] || target.AssignmentGroup || '';
+                target.State        = rec['state'] || target.State || '';
+                target.SLADef       = rec['sla definition'] || target.SLADef || '';
+                target.Stage        = rec['stage'] || target.Stage || '';
+                target.BreachTime   = rec['breach time'] || target.BreachTime || '';
+                
+                // Extract SAP + Phone from raw description
+                const rawDesc = rec['description'] || '';
+                target.SAPID       = rec['sap id'] || extractSAP(rawDesc) || target.SAPID || '';
+                target.Phone       = rec['phone'] || rec['phone number'] || extractPhone(rawDesc) || target.Phone || '';
+
+                // Build Custom Description once
+                target.CustomDesc  = `SAP: ${target.SAPID} | PHONE: ${target.Phone} | ${target.ShortDesc}`;
+
+                // Statuses
+                target.OrigCEP  = (rec['original cep status']  || target.OrigCEP  || '').toUpperCase();
+                target.OrigOkta = (rec['original okta status'] || target.OrigOkta || '').toUpperCase();
+                target.ValCEP   = (rec['validated cep status pmf refresh']  || target.ValCEP  || '').toUpperCase();
+                target.ValOkta  = (rec['validated okta status pmf refresh'] || target.ValOkta || '').toUpperCase();
+
+                // L2 group mapping
+                const L2MAP = {
+                    'account locked out':'B2B PROFILE MANAGEMENT BACKEND CEP - GLOBAL',
+                    'application issues':'B2B PROFILE MANAGEMENT BACKEND CEP - GLOBAL',
+                    'change phone number':'B2B PROFILE MANAGEMENT BACKEND CEP - GLOBAL',
+                    'order history not visible':'B2B DIGITAL ORDERING BACKEND CEP - GLOBAL',
+                    'orders cancelled':'B2B DIGITAL ORDERING BACKEND CEP - GLOBAL',
+                    'orders didn\'t arrive':'B2B DIGITAL ORDERING BACKEND CEP - GLOBAL',
+                    'password reset':'B2B PROFILE MANAGEMENT BACKEND CEP - GLOBAL',
+                    'promotions':'B2B CUSTOMER ENGAGEMENT BACKEND CEP - GLOBAL',
+                    'redeem rewards':'B2B CUSTOMER ENGAGEMENT BACKEND CEP - GLOBAL',
+                    'unable to login':'B2B PROFILE MANAGEMENT BACKEND CEP - GLOBAL',
+                    'unable to register':'B2B PROFILE MANAGEMENT BACKEND CEP - GLOBAL',
+                    'wrong delivery date':'B2B DIGITAL ORDERING BACKEND CEP - GLOBAL'
+                };
+                target.L2Group = L2MAP[(target.ShortDesc || '').toLowerCase().trim()] || '';
+
+                // AUTO-STRATEGY (only set on first import)
+                if(isNew) {
+                    if(target.AssignmentGroup && !target.AssignmentGroup.toUpperCase().includes('B2B CALL CENTER - MX')) {
+                        target.Strategy = 'L2';
+                    } else if(isOutboundReady(target)) {
+                        target.Strategy = 'L1';
+                    }
+                    // else stays PENDING (untouched, needs Morning Triage)
+                }
+            });
+
+            // Redirect to Steering Dashboard after import
+            saveData(true);
+            alert(`Import done: ${added} new, ${updated} updated.\n\nCheck Steering Dashboard for summary.`);
+            switchTab('tab-dash', document.querySelector('.nav-item'));
+        }
+
+        // --- Logic: Morning Triage ---
+        function renderTriage() {
+            const untouched = GLOBAL_DATA.filter(r => !r.OrigCEP && !r.OrigOkta && !r.ValCEP && !r.ValOkta && !r.SNOWClosed);
+            const table = document.getElementById('triage-table');
+            let html = `<thead><tr><th>Incident</th><th>Short Desc</th><th>SAP ID</th><th>Breach</th><th>Decide Path</th></tr></thead><tbody>`;
+            untouched.forEach(r => {
+                html += `<tr>
+                    <td><strong>${r.Incident}</strong></td>
+                    <td style="font-size:0.8rem;">${r.ShortDesc || ''}</td>
+                    <td style="color:var(--brand-cyan); font-weight:600;">${r.SAPID || ''}</td>
+                    <td style="color:var(--danger); font-size:0.75rem;">${r.BreachTime || ''}</td>
+                    <td><div style="display:flex;gap:5px;">
+                        <button class="status-pill tag-active" onclick="setStrategy('${r.Incident}', 'L1')">KEEP L1</button>
+                        <button class="status-pill" style="background:#DBEAFE;color:#1E40AF;" onclick="setStrategy('${r.Incident}', 'L2')">SEND L2</button>
+                    </div></td>
+                </tr>`;
+            });
+            table.innerHTML = html + `</tbody>`;
+        }
+        function setStrategy(inc, str) {
+            const r = GLOBAL_DATA.find(x => x.Incident === inc);
+            if(r) { r.Strategy = str; r.Journey += ` | Strat set to ${str} on triage`; }
+            saveData(true);
+        }
+
+        // --- Logic: Dispatches ---
+        function renderAgentGrids() {
+            const agents = document.getElementById('agentInput').value.split(',').map(a => a.trim()).filter(a => a);
+            const gridVal = document.getElementById('val-agent-grid');
+            const gridOut = document.getElementById('out-agent-grid');
+            
+            const populate = (container, callback, active) => {
+                container.innerHTML = agents.map(name => {
+                    const count = GLOBAL_DATA.filter(r => r.AssignedAgent === name).length;
+                    return `<div class="agent-card ${active === name ? 'active' : ''}" onclick="${callback}('${name}')"><strong>${name}</strong><div class="agent-badge">${count}</div></div>`;
+                }).join('');
+            };
+            populate(gridVal, "selectValAgent", SELECTED_VAL_AGENT);
+            populate(gridOut, "selectOutAgent", SELECTED_OUT_AGENT);
+
+            const filterAgent = document.getElementById('filterAgent');
+            const curVal = filterAgent.value;
+            filterAgent.innerHTML = `<option value="ALL">ALL AGENTS</option>` + agents.map(a => `<option value="${a}">${a}</option>`).join('');
+            filterAgent.value = curVal;
+        }
+
+        function selectValAgent(n) { SELECTED_VAL_AGENT = n; renderAgentGrids(); document.getElementById('val-workspace').classList.remove('hidden'); renderValWorkspace(n); }
+        function selectOutAgent(n) { SELECTED_OUT_AGENT = n; renderAgentGrids(); document.getElementById('out-workspace').classList.remove('hidden'); renderOutWorkspace(n); }
+
+        function exportAgentCSV(name) {
+            const tickets = GLOBAL_DATA.filter(r => r.AssignedAgent === name);
+            const cols = ['Number','State','Short description','Assignment group','Assigned to','SLA definition','Stage','Custom Description','L2 Group to be assign to','To be Cancelled','Agent Status','SAP ID','Phone number'];
+            const rows = tickets.map(t => [
+                t.Incident, t.State||'', t.ShortDesc||'', t.AssignmentGroup||'', t.AssignedAgent||'',
+                t.SLADef||'', t.Stage||'', t.CustomDesc||'', t.L2Group||'', '', '',
+                t.SAPID||'', t.Phone||''
+            ]);
+            const csv = [cols, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+            const a = document.createElement('a');
+            a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+            a.download = `${name}_WorkQueue_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`;
+            a.click();
+        }
+
+        function renderValWorkspace(name) {
+            const tickets = GLOBAL_DATA.filter(r => r.AssignedAgent === name && !isOutboundReady(r));
+            const div = document.getElementById('val-workspace-content');
+            let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                <h4>${name}'s Validation Desk (${tickets.length} tickets)</h4>
+                <button class="btn btn-amber" onclick="exportAgentCSV('${name}')">⬇️ Export My Queue (CSV)</button>
+            </div>
+            <div class="table-wrap"><table><thead><tr>
+                <th>Inc</th><th>Short Desc</th><th>SAP ID</th><th>Phone</th><th>Orig CEP</th><th>Orig OKTA</th><th>Val CEP</th><th>Val OKTA</th>
+            </tr></thead><tbody>`;
+            tickets.forEach(t => {
+                html += `<tr>
+                <td><strong>${t.Incident}</strong></td>
+                <td style="font-size:0.75rem;">${t.ShortDesc||''}</td>
+                <td style="font-weight:600;color:var(--brand-cyan);">${t.SAPID||''}</td>
+                <td>${t.Phone||''}</td>
+                <td><select onchange="updateCell('${t.Incident}','OrigCEP',this.value)"><option value="">-</option><option value="ACTIVE" ${t.OrigCEP==='ACTIVE'?'selected':''}>ACTIVE</option><option value="INACTIVE" ${t.OrigCEP==='INACTIVE'?'selected':''}>INACTIVE</option></select></td>
+                <td><select onchange="updateCell('${t.Incident}','OrigOkta',this.value)"><option value="">-</option><option value="ACTIVE" ${t.OrigOkta==='ACTIVE'?'selected':''}>ACTIVE</option><option value="LOCKED" ${t.OrigOkta==='LOCKED'?'selected':''}>LOCKED</option></select></td>
+                <td><select onchange="updateCell('${t.Incident}','ValCEP',this.value)"><option value="">-</option><option value="ACTIVE" ${t.ValCEP==='ACTIVE'?'selected':''}>ACTIVE</option><option value="INACTIVE" ${t.ValCEP==='INACTIVE'?'selected':''}>INACTIVE</option></select></td>
+                <td><select onchange="updateCell('${t.Incident}','ValOkta',this.value)"><option value="">-</option><option value="ACTIVE" ${t.ValOkta==='ACTIVE'?'selected':''}>ACTIVE</option><option value="LOCKED" ${t.ValOkta==='LOCKED'?'selected':''}>LOCKED</option></select></td>
+                </tr>`;
+            });
+            div.innerHTML = html + `</tbody></table></div>
+            <button class="btn btn-success" style="margin-top:15px;" onclick="saveData()">💾 Save Progress</button>
+            <button class="btn btn-amber" style="margin-top:15px;margin-left:10px;" onclick="exportAgentCSV('${name}')">⬇️ Download CSV</button>`;
+        }
+
+        function renderOutWorkspace(name) {
+            const tickets = GLOBAL_DATA.filter(r => r.AssignedAgent === name && isOutboundReady(r));
+            const div = document.getElementById('out-workspace-content');
+            let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+                <h4>${name}'s Outbound Desk — ${tickets.length} tickets ready</h4>
+                <button class="btn btn-amber" onclick="exportAgentCSV('${name}')">⬇️ Export CSV</button>
+            </div>
+            <div class="table-wrap"><table><thead><tr>
+                <th>Incident</th><th>Short Description</th><th>SAP ID</th><th>Phone</th><th>Contact Date</th><th>Comments</th><th>Close</th>
+            </tr></thead><tbody>`;
+            tickets.forEach(t => {
+                html += `<tr>
+                <td><strong>${t.Incident}</strong></td>
+                <td style="font-size:0.8rem;color:var(--text-muted);">${t.ShortDesc||''}</td>
+                <td style="font-weight:600;color:var(--brand-cyan);">${t.SAPID||''}</td>
+                <td>${t.Phone||''}</td>
+                <td><input type="date" class="input-text" value="${t.ContactDate||''}" onchange="updateCell('${t.Incident}','ContactDate',this.value)"></td>
+                <td><input type="text" class="input-text" placeholder="Call outcome..." value="${t.Comments||''}" onchange="updateCell('${t.Incident}','Comments',this.value)"></td>
+                <td><input type="checkbox" ${t.SNOWClosed?'checked':''} onchange="updateCell('${t.Incident}','SNOWClosed',this.checked)"></td>
+                </tr>`;
+            });
+            div.innerHTML = html + `</tbody></table></div>
+            <button class="btn btn-amber" style="margin-top:15px;" onclick="saveData()">💾 Save Progress</button>`;
+        }
+
+        function updateCell(inc, key, val) {
+            const r = GLOBAL_DATA.find(x => x.Incident === inc);
+            if(r) { r[key] = val; r.Journey += ` | ${key}=${val} @ ${new Date().toLocaleTimeString()}`; }
+        }
+
+        function dispatchValidationWork() {
+            // ONLY dispatch truly PENDING tickets (untouched — no CEP/Okta status at all)
+            const queue = GLOBAL_DATA.filter(r =>
+                r.Strategy === 'PENDING' &&
+                !r.OrigCEP && !r.OrigOkta && !r.ValCEP && !r.ValOkta &&
+                (!r.AssignedAgent || r.AssignedAgent === 'Unassigned')
+            );
+            const agents = document.getElementById('agentInput').value.split(',').map(a => a.trim()).filter(a => a);
+            if(!queue.length) return alert('No new untouched tickets to dispatch.');
+            if(!agents.length) return alert('No agents configured.');
+            queue.forEach((r, i) => {
+                r.AssignedAgent = agents[i % agents.length];
+                r.Strategy = 'L1';
+                r.Journey += ` | Dispatched to ${r.AssignedAgent}`;
+            });
+            saveData(true);
+            alert(`✅ Dispatched ${queue.length} tickets across ${agents.length} agents.`);
+        }
+
+        function dispatchOutboundWork() {
+            const queue = GLOBAL_DATA.filter(r => isOutboundReady(r) && (!r.AssignedAgent || r.AssignedAgent === 'Unassigned'));
+            const agents = document.getElementById('agentInput').value.split(',').map(a => a.trim()).filter(a => a);
+            queue.forEach((r, i) => r.AssignedAgent = agents[i % agents.length]);
+            saveData();
+        }
+
+        // --- Logic: Dashboard Finding ---
+        function renderGlobalTable() {
+            const search = document.getElementById('globalSearch').value.toLowerCase();
+            const strat = document.getElementById('filterStrategy').value;
+            const agent = document.getElementById('filterAgent').value;
+            const list = GLOBAL_DATA.filter(r => {
+                const matchSearch = r.Incident.toLowerCase().includes(search) || (r.ShortDesc||'').toLowerCase().includes(search);
+                const matchStrat = strat === 'ALL' || r.Strategy === strat;
+                const matchAgent = agent === 'ALL' || r.AssignedAgent === agent;
+                return matchSearch && matchStrat && matchAgent;
+            });
+            const table = document.getElementById('global-table');
+            let html = `<thead><tr><th>Incident</th><th>Short Description</th><th>SAP ID</th><th>Strategy</th><th>Agent</th><th>Orig CEP</th><th>Val CEP</th></tr></thead><tbody>`;
+            list.slice(0, 150).forEach(r => {
+                const cepClass = r.OrigCEP === 'ACTIVE' ? 'tag-active' : r.OrigCEP ? 'tag-pending' : 'tag-empty';
+                const valClass = r.ValCEP === 'ACTIVE' ? 'tag-active' : r.ValCEP ? 'tag-pending' : 'tag-empty';
+                html += `<tr>
+                    <td style="font-weight:700;">${r.Incident}</td>
+                    <td style="font-size:0.8rem; color:var(--text-muted);">${r.ShortDesc || ''}</td>
+                    <td style="font-weight:600; color:var(--brand-cyan);">${r.SAPID || ''}</td>
+                    <td><span class="status-pill ${r.Strategy==='L1'?'tag-active':r.Strategy==='L2'?'':'tag-pending'}">${r.Strategy}</span></td>
+                    <td>${r.AssignedAgent || '-'}</td>
+                    <td><span class="status-pill ${cepClass}">${r.OrigCEP || '—'}</span></td>
+                    <td><span class="status-pill ${valClass}">${r.ValCEP || '—'}</span></td>
+                </tr>`;
+            });
+            table.innerHTML = html + `</tbody>`;
+        }
+
+        function renderMasterTable() {
+            const table = document.getElementById('master-table');
+            let html = `<thead><tr><th>Inc</th><th>Path</th><th>History / Journey</th></tr></thead><tbody>`;
+            GLOBAL_DATA.slice(0, 200).forEach(r => {
+                html += `<tr><td><strong>${r.Incident}</strong></td><td>${r.Strategy}</td><td><small>${r.Journey}</small></td></tr>`;
+            });
+            table.innerHTML = html + `</tbody>`;
+        }
+
+        function updateLastSync() { document.getElementById('last-update').innerText = `Last System Calculation: ${new Date().toLocaleTimeString()}`; }
+        function saveAgents() { saveData(); }
+        function resetLocalStorage() { if(confirm('Wipe everything?')) { localStorage.clear(); location.reload(); } }
+    </script>
+</body>
+</html>
